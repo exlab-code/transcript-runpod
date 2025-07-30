@@ -66,27 +66,16 @@ def load_whisper_model():
             model_size = os.getenv("WHISPER_MODEL", "medium")
             compute_type = os.getenv("WHISPER_COMPUTE_TYPE", "float16")
             
-            logger.info(f"Loading faster-whisper model: {model_size} with {compute_type} precision")
+            logger.info(f"🚀 Loading faster-whisper model: {model_size} with {compute_type} precision on GPU")
             
-            # Try GPU first, fallback to CPU if cuDNN issues
-            try:
-                whisper_model = WhisperModel(
-                    model_size, 
-                    device="cuda",
-                    compute_type=compute_type,
-                    cpu_threads=1,
-                    local_files_only=False
-                )
-                logger.info("✅ Faster-whisper GPU model loaded successfully")
-            except Exception as gpu_error:
-                logger.warning(f"GPU loading failed ({gpu_error}), falling back to CPU")
-                whisper_model = WhisperModel(
-                    model_size, 
-                    device="cpu",
-                    compute_type="int8",
-                    cpu_threads=4
-                )
-                logger.info("✅ Faster-whisper CPU model loaded successfully")
+            # Force GPU-only for performance testing
+            whisper_model = WhisperModel(
+                model_size, 
+                device="cuda",
+                compute_type=compute_type,
+                cpu_threads=1
+            )
+            logger.info("✅ GPU model loaded successfully - ready for performance testing")
             
         except Exception as e:
             logger.error(f"❌ Failed to load whisper model: {e}")
