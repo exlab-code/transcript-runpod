@@ -71,7 +71,8 @@ def load_whisper_model():
                 model_size, 
                 device="cuda",
                 compute_type=compute_type,
-                cpu_threads=1
+                cpu_threads=1,
+                local_files_only=False
             )
             logger.info("✅ Faster-whisper GPU model loaded successfully")
             
