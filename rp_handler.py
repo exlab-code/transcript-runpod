@@ -68,6 +68,10 @@ def load_whisper_model():
             
             logger.info(f"🚀 Loading faster-whisper model: {model_size} with {compute_type} precision on GPU")
             
+            # Disable cuDNN to avoid library issues - use pure CUDA
+            import os
+            os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
+            
             # Force GPU-only for performance testing
             whisper_model = WhisperModel(
                 model_size, 
