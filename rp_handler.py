@@ -66,16 +66,20 @@ def load_whisper_model():
             model_size = os.getenv("WHISPER_MODEL", "medium")
             compute_type = os.getenv("WHISPER_COMPUTE_TYPE", "float16")
             
-            logger.info(f"🚀 Loading faster-whisper model: {model_size} on high-performance CPU (GPU disabled due to cuDNN issues)")
+            logger.info(f"🚀 Loading faster-whisper model: {model_size} with {compute_type} precision on GPU")
             
-            # Force CPU mode until we solve cuDNN library issues
+            # Disable cuDNN completely - use pure CUDA
+            os.environ['TORCH_CUDNN_V8_API_DISABLED'] = '1'
+            os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
+            
+            # GPU-only for performance testing
             whisper_model = WhisperModel(
                 model_size, 
-                device="cpu",
-                compute_type="int8",
-                cpu_threads=12  # Max CPU threads on powerful RunPod hardware
+                device="cuda",
+                compute_type=compute_type,
+                cpu_threads=1
             )
-            logger.info("✅ High-performance CPU model loaded - testing baseline performance")
+            logger.info("✅ GPU model loaded with cuDNN disabled - pure CUDA performance!")
             
         except Exception as e:
             logger.error(f"❌ Failed to load whisper model: {e}")
