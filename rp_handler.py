@@ -211,4 +211,66 @@ def handler(job):
         }
 
 # RunPod serverless entry point
-runpod.serverless.start({"handler": handler})
+if __name__ == "__main__":
+    import sys
+    
+    # Check for local testing flags
+    if "--test_input" in sys.argv:
+        # Local testing mode
+        import json
+        test_idx = sys.argv.index("--test_input") + 1
+        if test_idx < len(sys.argv):
+            test_input = sys.argv[test_idx]
+            try:
+                if test_input.startswith("{"):
+                    # JSON string
+                    job_data = json.loads(test_input)
+                else:
+                    # File path
+                    with open(test_input, 'r') as f:
+                        job_data = json.load(f)
+                
+                print("🧪 Running local test...")
+                result = handler(job_data)
+                print("✅ Test result:")
+                print(json.dumps(result, indent=2))
+            except Exception as e:
+                print(f"❌ Test failed: {e}")
+                import traceback
+                traceback.print_exc()
+        else:
+            print("❌ --test_input requires a JSON string or file path")
+        sys.exit()
+    
+    elif "--rp_serve_api" in sys.argv:
+        # Local server mode
+        import uvicorn
+        from fastapi import FastAPI
+        from pydantic import BaseModel
+        
+        app = FastAPI(title="RunPod Local Test Server")
+        
+        class JobRequest(BaseModel):
+            input: dict
+        
+        @app.post("/run")
+        async def run_job(job: JobRequest):
+            try:
+                result = handler(job.dict())
+                return {"status": "success", "output": result}
+            except Exception as e:
+                return {"status": "error", "error": str(e)}
+        
+        port = 8000
+        if "--rp_api_port" in sys.argv:
+            port_idx = sys.argv.index("--rp_api_port") + 1
+            if port_idx < len(sys.argv):
+                port = int(sys.argv[port_idx])
+        
+        print(f"🚀 Starting local test server on http://localhost:{port}")
+        print(f"📝 Test with: curl -X POST http://localhost:{port}/run -H 'Content-Type: application/json' -d @test_input.json")
+        uvicorn.run(app, host="0.0.0.0", port=port)
+    
+    else:
+        # Normal RunPod serverless mode
+        runpod.serverless.start({"handler": handler})
