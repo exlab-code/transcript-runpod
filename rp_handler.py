@@ -66,16 +66,16 @@ def load_whisper_model():
             model_size = os.getenv("WHISPER_MODEL", "medium")
             compute_type = os.getenv("WHISPER_COMPUTE_TYPE", "float16")
             
-            logger.info(f"🚀 Loading faster-whisper model: {model_size} with {compute_type} precision on GPU")
+            logger.info(f"🚀 Loading faster-whisper model: {model_size} with CPU for build testing")
             
-            # GPU-only for performance testing - cuDNN libraries should now be available via LD_LIBRARY_PATH
+            # Try CPU first to test if build works at all
             whisper_model = WhisperModel(
                 model_size, 
-                device="cuda",
-                compute_type=compute_type,
-                cpu_threads=1
+                device="cpu",
+                compute_type="int8",
+                cpu_threads=4
             )
-            logger.info("✅ GPU model loaded successfully - REAL GPU PERFORMANCE! 🚀")
+            logger.info("✅ CPU model loaded successfully - testing build")
             
         except Exception as e:
             logger.error(f"❌ Failed to load whisper model: {e}")
@@ -184,7 +184,7 @@ def handler(job):
                     "real_time_factor": rtf,
                     "model": os.getenv("WHISPER_MODEL", "medium"),
                     "compute_type": os.getenv("WHISPER_COMPUTE_TYPE", "float16"),
-                    "device": "cuda",
+                    "device": "cpu",
                     "speakers_detected": len(set(seg["speaker"] for seg in cleaned_segments)),
                     "segments_count": len(cleaned_segments),
                     "serverless": True
