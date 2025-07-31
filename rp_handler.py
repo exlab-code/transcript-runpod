@@ -211,4 +211,4 @@ def handler(job):
         }
 
 # RunPod serverless entry point
-runpod.serverless.start({"handler": handler})
+runpod.serverless.start(handler)
