@@ -14,7 +14,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy handler
 COPY rp_handler.py .
 
-# Use CPU for now to test if build works at all
+# GPU-enabled transcription with faster-whisper
 
 # Start the handler
 CMD python3 -u rp_handler.py
